@@ -1,0 +1,24 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "your.email@example.com",
+                "Name": "magillos"
+            }
+        ],
+        "Category": "System Information",
+        "Description": "Pipewire quantum and sample rate settings",
+        "Icon": "pipewire",
+        "Id": "org.kde.plasma.pipewiresettings",
+        "License": "GPL-3.0",
+        "Name": "Pipewire Settings",
+        "ServiceTypes": [
+            "Plasma/Applet"
+        ],
+        "Version": "0.1",
+        "Website": "https://github.com/magillos/Plasma-6-power-usage-widget"
+    },
+    "X-Plasma-API": "declarativeappletscript",
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-MainScript": "ui/main.qml"
+}
