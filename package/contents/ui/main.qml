@@ -11,32 +11,32 @@ PlasmoidItem {
     height: 130
 
     property ListModel quantumModel: ListModel {
-        ListElement { text: ""; value: "-1" }
-        ListElement { text: "Default"; value: "0" }
-        ListElement { text: "16"; value: "16" }
-        ListElement { text: "32"; value: "32" }
-        ListElement { text: "48"; value: "48" }
-        ListElement { text: "64"; value: "64" }
-        ListElement { text: "96"; value: "96" }
-        ListElement { text: "128"; value: "128" }
-        ListElement { text: "144"; value: "144" }
-        ListElement { text: "192"; value: "192" }
-        ListElement { text: "240"; value: "240" }
-        ListElement { text: "256"; value: "256" }
-        ListElement { text: "512"; value: "512" }
-        ListElement { text: "1024"; value: "1024" }
-        ListElement { text: "2048"; value: "2048" }
+        ListElement { text: ""; value: "-1"; isCurrent: false }
+        ListElement { text: "Default"; value: "0"; isCurrent: false }
+        ListElement { text: "16"; value: "16"; isCurrent: false }
+        ListElement { text: "32"; value: "32"; isCurrent: false }
+        ListElement { text: "48"; value: "48"; isCurrent: false }
+        ListElement { text: "64"; value: "64"; isCurrent: false }
+        ListElement { text: "96"; value: "96"; isCurrent: false }
+        ListElement { text: "128"; value: "128"; isCurrent: false }
+        ListElement { text: "144"; value: "144"; isCurrent: false }
+        ListElement { text: "192"; value: "192"; isCurrent: false }
+        ListElement { text: "240"; value: "240"; isCurrent: false }
+        ListElement { text: "256"; value: "256"; isCurrent: false }
+        ListElement { text: "512"; value: "512"; isCurrent: false }
+        ListElement { text: "1024"; value: "1024"; isCurrent: false }
+        ListElement { text: "2048"; value: "2048"; isCurrent: false }
     }
 
     property ListModel sampleRateModel: ListModel {
-        ListElement { text: ""; value: "-1" }
-        ListElement { text: "Default"; value: "0" }
-        ListElement { text: "44100"; value: "44100" }
-        ListElement { text: "48000"; value: "48000" }
-        ListElement { text: "88200"; value: "88200" }
-        ListElement { text: "96000"; value: "96000" }
-        ListElement { text: "176400"; value: "176400" }
-        ListElement { text: "192000"; value: "192000" }
+        ListElement { text: ""; value: "-1"; isCurrent: false }
+        ListElement { text: "Default"; value: "0"; isCurrent: false }
+        ListElement { text: "44100"; value: "44100"; isCurrent: false }
+        ListElement { text: "48000"; value: "48000"; isCurrent: false }
+        ListElement { text: "88200"; value: "88200"; isCurrent: false }
+        ListElement { text: "96000"; value: "96000"; isCurrent: false }
+        ListElement { text: "176400"; value: "176400"; isCurrent: false }
+        ListElement { text: "192000"; value: "192000"; isCurrent: false }
     }
 
     Plasma5Support.DataSource {
@@ -48,18 +48,22 @@ PlasmoidItem {
                 if (data.stdout.trim() === "0") {
                     executable.exec(quantumAlternativeSource);
                 } else {
-                    quantumModel.setProperty(0, "text", "Current: " + data.stdout);
+                    quantumModel.setProperty(0, "text", data.stdout.trim());
+                    quantumModel.setProperty(0, "isCurrent", true);
                 }
             } else if (source === quantumAlternativeSource) {
-                quantumModel.setProperty(0, "text", "Current: " + data.stdout);
+                quantumModel.setProperty(0, "text", data.stdout.trim());
+                quantumModel.setProperty(0, "isCurrent", true);
             } else if (source === sampleRateSource) {
                 if (data.stdout.trim() === "0") {
                     executable.exec(sampleRateAlternativeSource);
                 } else {
-                    sampleRateModel.setProperty(0, "text", "Current: " + data.stdout);
+                    sampleRateModel.setProperty(0, "text", data.stdout.trim());
+                    sampleRateModel.setProperty(0, "isCurrent", true);
                 }
             } else if (source === sampleRateAlternativeSource) {
-                sampleRateModel.setProperty(0, "text", "Current: " + data.stdout);
+                sampleRateModel.setProperty(0, "text", data.stdout.trim());
+                sampleRateModel.setProperty(0, "isCurrent", true);
             }
             executable.disconnectSource(source);
         }
@@ -78,7 +82,7 @@ PlasmoidItem {
     property string sampleRateSource: `pw-metadata -n settings | grep clock.force-rate | awk -F"'" '{print $4}' | cut -d' ' -f1`
     property string sampleRateAlternativeSource: `pw-metadata -n settings | grep clock.rate | awk -F"'" '{print $4}' | cut -d' ' -f1`
 
-    toolTipMainText: i18n("Your Widget")
+    toolTipMainText: i18n("PipeWire Settings")
 
     fullRepresentation: Column {
         spacing: Kirigami.Units.largeSpacing
@@ -117,6 +121,29 @@ PlasmoidItem {
                 onCurrentIndexChanged: {
                     executable.exec(quantumSource);
                 }
+
+                delegate: ItemDelegate {
+                    width: quantumComboBox.width
+                    height: quantumComboBox.height
+                    contentItem: RowLayout {
+                        spacing: 5
+                        Text {
+                            text: model.isCurrent ? "Current: " : ""
+                            color: quantumComboBox.pressed ? quantumComboBox.palette.highlightedText : quantumComboBox.palette.text
+                            verticalAlignment: Text.AlignVCenter
+                            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                        }
+                        Text {
+                            text: model.text
+                            color: quantumComboBox.pressed ? quantumComboBox.palette.highlightedText : quantumComboBox.palette.text
+                            verticalAlignment: Text.AlignVCenter
+                            elide: Text.ElideRight
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                        }
+                    }
+                    highlighted: quantumComboBox.highlightedIndex === index
+                }
             }
         }
 
@@ -148,6 +175,29 @@ PlasmoidItem {
                 }
                 onCurrentIndexChanged: {
                     executable.exec(sampleRateSource);
+                }
+
+                delegate: ItemDelegate {
+                    width: sampleRateComboBox.width
+                    height: sampleRateComboBox.height
+                    contentItem: RowLayout {
+                        spacing: 5
+                        Text {
+                            text: model.isCurrent ? "Current: " : ""
+                            color: sampleRateComboBox.pressed ? sampleRateComboBox.palette.highlightedText : sampleRateComboBox.palette.text
+                            verticalAlignment: Text.AlignVCenter
+                            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                        }
+                        Text {
+                            text: model.text
+                            color: sampleRateComboBox.pressed ? sampleRateComboBox.palette.highlightedText : sampleRateComboBox.palette.text
+                            verticalAlignment: Text.AlignVCenter
+                            elide: Text.ElideRight
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                        }
+                    }
+                    highlighted: sampleRateComboBox.highlightedIndex === index
                 }
             }
         }
