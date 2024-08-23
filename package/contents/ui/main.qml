@@ -7,8 +7,7 @@ import org.kde.plasma.plasma5support 2.0 as Plasma5Support
 
 PlasmoidItem {
     id: root
-    width: 290
-    height: 130
+ 
 
     property ListModel quantumModel: ListModel {
         ListElement { text: ""; value: "-1"; isCurrent: false }
@@ -39,6 +38,18 @@ PlasmoidItem {
         ListElement { text: "192000"; value: "192000"; isCurrent: false }
     }
 
+    property int currentQuantum: 0
+    property int currentSampleRate: 0
+    property real calculatedLatency: 0
+
+    function updateLatency() {
+        if (currentQuantum > 0 && currentSampleRate > 0) {
+            calculatedLatency = (currentQuantum / currentSampleRate) * 1000;
+        } else {
+            calculatedLatency = 0;
+        }
+    }
+
     Plasma5Support.DataSource {
         id: executable
         engine: "executable"
@@ -48,22 +59,38 @@ PlasmoidItem {
                 if (data.stdout.trim() === "0") {
                     executable.exec(quantumAlternativeSource);
                 } else {
-                    quantumModel.setProperty(0, "text", data.stdout.trim());
+                    var quantum = data.stdout.trim();
+                    quantumModel.setProperty(0, "text", quantum);
+                    quantumModel.setProperty(0, "value", quantum);
                     quantumModel.setProperty(0, "isCurrent", true);
+                    currentQuantum = parseInt(quantum);
+                    updateLatency();
                 }
             } else if (source === quantumAlternativeSource) {
-                quantumModel.setProperty(0, "text", data.stdout.trim());
+                var quantum = data.stdout.trim();
+                quantumModel.setProperty(0, "text", quantum);
+                quantumModel.setProperty(0, "value", quantum);
                 quantumModel.setProperty(0, "isCurrent", true);
+                currentQuantum = parseInt(quantum);
+                updateLatency();
             } else if (source === sampleRateSource) {
                 if (data.stdout.trim() === "0") {
                     executable.exec(sampleRateAlternativeSource);
                 } else {
-                    sampleRateModel.setProperty(0, "text", data.stdout.trim());
+                    var sampleRate = data.stdout.trim();
+                    sampleRateModel.setProperty(0, "text", sampleRate);
+                    sampleRateModel.setProperty(0, "value", sampleRate);
                     sampleRateModel.setProperty(0, "isCurrent", true);
+                    currentSampleRate = parseInt(sampleRate);
+                    updateLatency();
                 }
             } else if (source === sampleRateAlternativeSource) {
-                sampleRateModel.setProperty(0, "text", data.stdout.trim());
+                var sampleRate = data.stdout.trim();
+                sampleRateModel.setProperty(0, "text", sampleRate);
+                sampleRateModel.setProperty(0, "value", sampleRate);
                 sampleRateModel.setProperty(0, "isCurrent", true);
+                currentSampleRate = parseInt(sampleRate);
+                updateLatency();
             }
             executable.disconnectSource(source);
         }
@@ -84,21 +111,31 @@ PlasmoidItem {
 
     toolTipMainText: i18n("PipeWire Settings")
 
-    fullRepresentation: Column {
+    fullRepresentation: ColumnLayout {
+        
         spacing: Kirigami.Units.largeSpacing
+        Layout.minimumWidth: 240
+        Layout.minimumHeight: 100
+        Layout.preferredWidth: 240
+        Layout.preferredHeight: 100
+   
+   ColumnLayout {
+            spacing: Kirigami.Units.smallSpacing
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
+
 
         RowLayout {
             spacing: Kirigami.Units.smallSpacing
 
             Label {
-                text: i18n("Quantum:")
-                Layout.alignment: Qt.AlignVCenter
-                font.bold: true
-                Layout.leftMargin: 21
-            }
+                    text: i18n("Quantum: ")
+           //       Layout.alignment: Qt.AlignVCenter
+                    font.bold: true
+                    Layout.leftMargin: 25
+                }
 
-            Item {
-            }
+            
 
             ComboBox {
                 id: quantumComboBox
@@ -114,6 +151,8 @@ PlasmoidItem {
                         return;
                     }
                     root.executeCommand("pw-metadata -n settings 0 clock.force-quantum " + currentValue)
+                    currentQuantum = parseInt(currentValue);
+                    updateLatency();
                 }
                 Component.onCompleted: {
                     executable.exec(quantumSource);
@@ -130,13 +169,11 @@ PlasmoidItem {
                         Text {
                             text: model.isCurrent ? "Current: " : ""
                             color: quantumComboBox.pressed ? quantumComboBox.palette.highlightedText : quantumComboBox.palette.text
-                            verticalAlignment: Text.AlignVCenter
-                            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                //          Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
                         }
                         Text {
                             text: model.text
                             color: quantumComboBox.pressed ? quantumComboBox.palette.highlightedText : quantumComboBox.palette.text
-                            verticalAlignment: Text.AlignVCenter
                             elide: Text.ElideRight
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
@@ -148,13 +185,15 @@ PlasmoidItem {
         }
 
         RowLayout {
+            Layout.fillWidth: true
             spacing: Kirigami.Units.smallSpacing
 
             Label {
-                text: i18n("Sample Rate:")
-                Layout.alignment: Qt.AlignVCenter
-                font.bold: true
-            }
+                    text: i18n("Sample Rate:")
+            //        Layout.alignment: Qt.AlignVCenter
+                    font.bold: true
+                    Layout.leftMargin: Kirigami.Units.smallSpacing
+                }
 
             ComboBox {
                 id: sampleRateComboBox
@@ -169,6 +208,8 @@ PlasmoidItem {
                         return;
                     }
                     root.executeCommand("pw-metadata -n settings 0 clock.force-rate " + currentValue)
+                    currentSampleRate = parseInt(currentValue);
+                    updateLatency();
                 }
                 Component.onCompleted: {
                     executable.exec(sampleRateSource);
@@ -185,21 +226,49 @@ PlasmoidItem {
                         Text {
                             text: model.isCurrent ? "Current: " : ""
                             color: sampleRateComboBox.pressed ? sampleRateComboBox.palette.highlightedText : sampleRateComboBox.palette.text
-                            verticalAlignment: Text.AlignVCenter
-                            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+             //             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
                         }
                         Text {
                             text: model.text
                             color: sampleRateComboBox.pressed ? sampleRateComboBox.palette.highlightedText : sampleRateComboBox.palette.text
-                            verticalAlignment: Text.AlignVCenter
                             elide: Text.ElideRight
                             Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                    //      Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
                         }
                     }
                     highlighted: sampleRateComboBox.highlightedIndex === index
                 }
             }
         }
+        
+        Item {
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+        }
+
+        RowLayout {
+            spacing: Kirigami.Units.smallSpacing
+            Layout.fillWidth: true
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            Label {
+                text: i18n("Latency:")
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+            }
+
+            Label {
+                text: calculatedLatency.toFixed(2) + " ms"
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                Layout.rightMargin: 5
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+            }
+        }
     }
+}
+
+
 }
