@@ -8,14 +8,14 @@
         ],
         "Category": "System Information",
         "Description": "Pipewire quantum and sample rate settings",
-        "Icon": "pipewire",
+        "Icon": "jack-plug(4).svg",
         "Id": "org.kde.plasma.pipewiresettings",
         "License": "GPL-3.0",
         "Name": "Pipewire Settings",
         "ServiceTypes": [
             "Plasma/Applet"
         ],
-        "Version": "0.3",
+        "Version": "0.4",
         "Website": "https://github.com/magillos/Pipewire-Settings-Widget-for-Plasma-6"
     },
     "X-Plasma-API": "declarativeappletscript",

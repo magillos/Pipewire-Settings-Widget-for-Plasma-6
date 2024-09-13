@@ -5,9 +5,13 @@ import org.kde.plasma.plasmoid 2.0
 import org.kde.kirigami 2.20 as Kirigami
 import org.kde.plasma.plasma5support 2.0 as Plasma5Support
 
+
+
+
 PlasmoidItem {
     id: root
- 
+
+
 
     property ListModel quantumModel: ListModel {
         ListElement { text: ""; value: "-1"; isCurrent: false }
@@ -49,6 +53,9 @@ PlasmoidItem {
             calculatedLatency = 0;
         }
     }
+
+    Plasmoid.icon: Qt.resolvedUrl("../jack-plug(4).svg")
+
 
     Plasma5Support.DataSource {
         id: executable
@@ -98,7 +105,7 @@ PlasmoidItem {
         function exec(cmd) {
             executable.connectSource(cmd);
         }
-    } 
+    }
 
     function executeCommand(command) {
         executable.exec(command);
@@ -112,163 +119,160 @@ PlasmoidItem {
     toolTipMainText: i18n("PipeWire Settings")
 
     fullRepresentation: ColumnLayout {
-        
+
         spacing: Kirigami.Units.largeSpacing
         Layout.minimumWidth: 240
         Layout.minimumHeight: 100
         Layout.preferredWidth: 240
         Layout.preferredHeight: 100
-   
-   ColumnLayout {
+
+        ColumnLayout {
             spacing: Kirigami.Units.smallSpacing
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignTop
 
+            RowLayout {
+                spacing: Kirigami.Units.smallSpacing
 
-        RowLayout {
-            spacing: Kirigami.Units.smallSpacing
-
-            Label {
+                Label {
                     text: i18n("Quantum: ")
-           //       Layout.alignment: Qt.AlignVCenter
                     font.bold: true
                     Layout.leftMargin: 25
                 }
 
-            
-
-            ComboBox {
-                id: quantumComboBox
-                Layout.fillWidth: true
-                Layout.preferredWidth: 150
-                Layout.leftMargin: -3
-                model: root.quantumModel
-                textRole: "text"
-                valueRole: "value"
-                padding: 20
-                onActivated: {
-                    if (currentValue === "-1") {
-                        return;
-                    }
-                    root.executeCommand("pw-metadata -n settings 0 clock.force-quantum " + currentValue)
-                    currentQuantum = parseInt(currentValue);
-                    updateLatency();
-                }
-                Component.onCompleted: {
-                    executable.exec(quantumSource);
-                }
-                onCurrentIndexChanged: {
-                    executable.exec(quantumSource);
-                }
-
-                delegate: ItemDelegate {
-                    width: quantumComboBox.width
-                    height: quantumComboBox.height
-                    contentItem: RowLayout {
-                        spacing: 5
-                        Text {
-                            text: model.isCurrent ? "Current: " : ""
-                            color: quantumComboBox.pressed ? quantumComboBox.palette.highlightedText : quantumComboBox.palette.text
-                //          Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                ComboBox {
+                    id: quantumComboBox
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 150
+                    Layout.leftMargin: -3
+                    model: root.quantumModel
+                    textRole: "text"
+                    valueRole: "value"
+                    padding: 20
+                    onActivated: {
+                        if (currentValue === "-1") {
+                            return;
                         }
-                        Text {
-                            text: model.text
-                            color: quantumComboBox.pressed ? quantumComboBox.palette.highlightedText : quantumComboBox.palette.text
-                            elide: Text.ElideRight
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                        root.executeCommand("pw-metadata -n settings 0 clock.force-quantum " + currentValue)
+                        if (currentValue === "0") {
+                            quantumComboBox.currentIndex = 0
                         }
+                        currentQuantum = parseInt(currentValue);
+                        updateLatency();
                     }
-                    highlighted: quantumComboBox.highlightedIndex === index
+                    Component.onCompleted: {
+                        executable.exec(quantumSource);
+                    }
+                    onCurrentIndexChanged: {
+                        executable.exec(quantumSource);
+                    }
+
+                    delegate: ItemDelegate {
+                        width: quantumComboBox.width
+                        height: quantumComboBox.height
+                        contentItem: RowLayout {
+                            spacing: 5
+                            Text {
+                                text: model.isCurrent ? "Current: " : ""
+                                color: quantumComboBox.pressed ? quantumComboBox.palette.highlightedText : quantumComboBox.palette.text
+                            }
+                            Text {
+                                text: model.text
+                                color: quantumComboBox.pressed ? quantumComboBox.palette.highlightedText : quantumComboBox.palette.text
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                            }
+                        }
+                        highlighted: quantumComboBox.highlightedIndex === index
+                    }
                 }
             }
-        }
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Kirigami.Units.smallSpacing
 
-            Label {
+                Label {
                     text: i18n("Sample Rate:")
-            //        Layout.alignment: Qt.AlignVCenter
                     font.bold: true
                     Layout.leftMargin: Kirigami.Units.smallSpacing
                 }
 
-            ComboBox {
-                id: sampleRateComboBox
-                Layout.fillWidth: true
-                Layout.preferredWidth: 150
-                model: root.sampleRateModel
-                textRole: "text"
-                valueRole: "value"
-                padding: 20
-                onActivated: {
-                    if (currentValue === "-1") {
-                        return;
+                ComboBox {
+                    id: sampleRateComboBox
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 150
+                    model: root.sampleRateModel
+                    textRole: "text"
+                    valueRole: "value"
+                    padding: 20
+                    onActivated: {
+                        if (currentValue === "-1") {
+                            return;
+                        }
+                        root.executeCommand("pw-metadata -n settings 0 clock.force-rate " + currentValue)
+                        if (currentValue === "0") {
+                            sampleRateComboBox.currentIndex = 0
+                        }
+                        currentSampleRate = parseInt(currentValue);
+                        updateLatency();
                     }
-                    root.executeCommand("pw-metadata -n settings 0 clock.force-rate " + currentValue)
-                    currentSampleRate = parseInt(currentValue);
-                    updateLatency();
-                }
-                Component.onCompleted: {
-                    executable.exec(sampleRateSource);
-                }
-                onCurrentIndexChanged: {
-                    executable.exec(sampleRateSource);
-                }
+                    Component.onCompleted: {
+                        executable.exec(sampleRateSource);
+                    }
+                    onCurrentIndexChanged: {
+                        executable.exec(sampleRateSource);
+                    }
 
-                delegate: ItemDelegate {
-                    width: sampleRateComboBox.width
-                    height: sampleRateComboBox.height
-                    contentItem: RowLayout {
-                        spacing: 5
-                        Text {
-                            text: model.isCurrent ? "Current: " : ""
-                            color: sampleRateComboBox.pressed ? sampleRateComboBox.palette.highlightedText : sampleRateComboBox.palette.text
-             //             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                    delegate: ItemDelegate {
+                        width: sampleRateComboBox.width
+                        height: sampleRateComboBox.height
+                        contentItem: RowLayout {
+                            spacing: 5
+                            Text {
+                                text: model.isCurrent ? "Current: " : ""
+                                color: sampleRateComboBox.pressed ? sampleRateComboBox.palette.highlightedText : sampleRateComboBox.palette.text
+                            }
+                            Text {
+                                text: model.text
+                                color: sampleRateComboBox.pressed ? sampleRateComboBox.palette.highlightedText : sampleRateComboBox.palette.text
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                            }
                         }
-                        Text {
-                            text: model.text
-                            color: sampleRateComboBox.pressed ? sampleRateComboBox.palette.highlightedText : sampleRateComboBox.palette.text
-                            elide: Text.ElideRight
-                            Layout.fillWidth: true
-                    //      Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                        }
+                        highlighted: sampleRateComboBox.highlightedIndex === index
                     }
-                    highlighted: sampleRateComboBox.highlightedIndex === index
                 }
             }
-        }
-        
-        Item {
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-        }
-
-        RowLayout {
-            spacing: Kirigami.Units.smallSpacing
-            Layout.fillWidth: true
 
             Item {
+                Layout.fillHeight: true
                 Layout.fillWidth: true
             }
 
-            Label {
-                text: i18n("Latency:")
-                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                font.pointSize: Kirigami.Theme.smallFont.pointSize
-            }
+            RowLayout {
+                spacing: Kirigami.Units.smallSpacing
+                Layout.fillWidth: true
 
-            Label {
-                text: calculatedLatency.toFixed(2) + " ms"
-                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                Layout.rightMargin: 5
-                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                Label {
+                    text: i18n("Latency:")
+                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                }
+
+                Label {
+                    text: calculatedLatency.toFixed(2) + " ms"
+                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                    Layout.rightMargin: 5
+                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                }
             }
         }
     }
-}
-
-
 }
