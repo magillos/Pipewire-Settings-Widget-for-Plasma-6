@@ -6,11 +6,8 @@ import org.kde.kirigami 2.20 as Kirigami
 import org.kde.plasma.plasma5support 2.0 as Plasma5Support
 
 
-
-
 PlasmoidItem {
     id: root
-
 
 
     property ListModel quantumModel: ListModel {
@@ -29,6 +26,8 @@ PlasmoidItem {
         ListElement { text: "512"; value: "512"; isCurrent: false }
         ListElement { text: "1024"; value: "1024"; isCurrent: false }
         ListElement { text: "2048"; value: "2048"; isCurrent: false }
+        ListElement { text: "4096"; value: "4096"; isCurrent: false }
+        ListElement { text: "8192"; value: "8192"; isCurrent: false }
     }
 
     property ListModel sampleRateModel: ListModel {
@@ -55,7 +54,6 @@ PlasmoidItem {
     }
 
     Plasmoid.icon: Qt.resolvedUrl("../jack-plug(4).svg")
-
 
     Plasma5Support.DataSource {
         id: executable
@@ -111,10 +109,10 @@ PlasmoidItem {
         executable.exec(command);
     }
 
-    property string quantumSource: `pw-metadata -n settings | grep clock.force-quantum | awk -F"'" '{print $4}' | cut -d' ' -f1`
-    property string quantumAlternativeSource: `pw-metadata -n settings | grep clock.quantum | awk -F"'" '{print $4}' | cut -d' ' -f1`
-    property string sampleRateSource: `pw-metadata -n settings | grep clock.force-rate | awk -F"'" '{print $4}' | cut -d' ' -f1`
-    property string sampleRateAlternativeSource: `pw-metadata -n settings | grep clock.rate | awk -F"'" '{print $4}' | cut -d' ' -f1`
+    property string quantumSource: `pw-metadata -n settings | awk -F"'" '/force-quantum/ {print $4}'`
+    property string quantumAlternativeSource: `pw-metadata -n settings | awk -F"'" '/clock.quantum/ {print $4}'`
+    property string sampleRateSource: `pw-metadata -n settings | awk -F"'" '/clock.force-rate/ {print $4}'`
+    property string sampleRateAlternativeSource: `pw-metadata -n settings | awk -F"'" '/clock.rate/ {print $4}'`
 
     toolTipMainText: i18n("PipeWire Settings")
 
@@ -135,7 +133,7 @@ PlasmoidItem {
                 spacing: Kirigami.Units.smallSpacing
 
                 Label {
-                    text: i18n("Quantum: ")
+                    text: i18n("Quantum:")
                     font.bold: true
                     Layout.leftMargin: 25
                 }
@@ -251,27 +249,33 @@ PlasmoidItem {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
             }
-
-            RowLayout {
-                spacing: Kirigami.Units.smallSpacing
+        }
+        RowLayout {
+            spacing: Kirigami.Units.smallSpacing
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
+            Button {
+                text: "Refresh"
+                onClicked: {
+                    executable.exec(quantumSource);
+                    executable.exec(sampleRateSource);
+                }
+            }
+            Item {
                 Layout.fillWidth: true
+            }
 
-                Item {
-                    Layout.fillWidth: true
-                }
+            Label {
+                text: i18n("Latency:")
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+            }
 
-                Label {
-                    text: i18n("Latency:")
-                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                    font.pointSize: Kirigami.Theme.smallFont.pointSize
-                }
-
-                Label {
-                    text: calculatedLatency.toFixed(2) + " ms"
-                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                    Layout.rightMargin: 5
-                    font.pointSize: Kirigami.Theme.smallFont.pointSize
-                }
+            Label {
+                text: calculatedLatency.toFixed(2) + " ms"
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                Layout.rightMargin: 5
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
             }
         }
     }
