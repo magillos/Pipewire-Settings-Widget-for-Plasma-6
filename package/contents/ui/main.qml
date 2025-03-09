@@ -9,41 +9,101 @@ import org.kde.plasma.plasma5support 2.0 as Plasma5Support
 PlasmoidItem {
     id: root
 
+    // Property to track if we've initialized models from config
+    property bool modelsInitialized: false
 
+    // Dynamic ListModels that will be populated from configuration
     property ListModel quantumModel: ListModel {
         ListElement { text: ""; value: "-1"; isCurrent: false }
         ListElement { text: "Default"; value: "0"; isCurrent: false }
-        ListElement { text: "16"; value: "16"; isCurrent: false }
-        ListElement { text: "32"; value: "32"; isCurrent: false }
-        ListElement { text: "48"; value: "48"; isCurrent: false }
-        ListElement { text: "64"; value: "64"; isCurrent: false }
-        ListElement { text: "96"; value: "96"; isCurrent: false }
-        ListElement { text: "128"; value: "128"; isCurrent: false }
-        ListElement { text: "144"; value: "144"; isCurrent: false }
-        ListElement { text: "192"; value: "192"; isCurrent: false }
-        ListElement { text: "240"; value: "240"; isCurrent: false }
-        ListElement { text: "256"; value: "256"; isCurrent: false }
-        ListElement { text: "512"; value: "512"; isCurrent: false }
-        ListElement { text: "1024"; value: "1024"; isCurrent: false }
-        ListElement { text: "2048"; value: "2048"; isCurrent: false }
-        ListElement { text: "4096"; value: "4096"; isCurrent: false }
-        ListElement { text: "8192"; value: "8192"; isCurrent: false }
     }
 
     property ListModel sampleRateModel: ListModel {
         ListElement { text: ""; value: "-1"; isCurrent: false }
         ListElement { text: "Default"; value: "0"; isCurrent: false }
-        ListElement { text: "44100"; value: "44100"; isCurrent: false }
-        ListElement { text: "48000"; value: "48000"; isCurrent: false }
-        ListElement { text: "88200"; value: "88200"; isCurrent: false }
-        ListElement { text: "96000"; value: "96000"; isCurrent: false }
-        ListElement { text: "176400"; value: "176400"; isCurrent: false }
-        ListElement { text: "192000"; value: "192000"; isCurrent: false }
     }
 
     property int currentQuantum: 0
     property int currentSampleRate: 0
     property real calculatedLatency: 0
+
+    // Function to initialize models from configuration
+    function initializeModels() {
+        if (modelsInitialized) return;
+        
+        // Add quantum values from config and sort them
+        let quantumValues = [...plasmoid.configuration.customQuantumValues];
+        quantumValues.sort((a, b) => parseInt(a) - parseInt(b));
+        for (let i = 0; i < quantumValues.length; i++) {
+            let value = quantumValues[i];
+            quantumModel.append({ 
+                text: value, 
+                value: value, 
+                isCurrent: false 
+            });
+        }
+        
+        // Add sample rate values from config and sort them
+        let sampleRateValues = [...plasmoid.configuration.customSampleRateValues];
+        sampleRateValues.sort((a, b) => parseInt(a) - parseInt(b));
+        for (let i = 0; i < sampleRateValues.length; i++) {
+            let value = sampleRateValues[i];
+            sampleRateModel.append({ 
+                text: value, 
+                value: value, 
+                isCurrent: false 
+            });
+        }
+        
+        modelsInitialized = true;
+    }
+
+    // Initialize models when plasmoid is ready
+    Component.onCompleted: {
+        initializeModels();
+    }
+
+    // Update models when configuration changes
+    Connections {
+        target: plasmoid.configuration
+        function onCustomQuantumValuesChanged() {
+            // Clear existing custom values but keep current/default
+            while (quantumModel.count > 2) {
+                quantumModel.remove(2);
+            }
+            
+            // Sort and add new values from configuration
+            let quantumValues = [...plasmoid.configuration.customQuantumValues];
+            quantumValues.sort((a, b) => parseInt(a) - parseInt(b));
+            for (let i = 0; i < quantumValues.length; i++) {
+                let value = quantumValues[i];
+                quantumModel.append({
+                    text: value,
+                    value: value,
+                    isCurrent: false
+                });
+            }
+        }
+        
+        function onCustomSampleRateValuesChanged() {
+            // Clear existing custom values but keep current/default
+            while (sampleRateModel.count > 2) {
+                sampleRateModel.remove(2);
+            }
+            
+            // Sort and add new values from configuration
+            let sampleRateValues = [...plasmoid.configuration.customSampleRateValues];
+            sampleRateValues.sort((a, b) => parseInt(a) - parseInt(b));
+            for (let i = 0; i < sampleRateValues.length; i++) {
+                let value = sampleRateValues[i];
+                sampleRateModel.append({
+                    text: value,
+                    value: value,
+                    isCurrent: false
+                });
+            }
+        }
+    }
 
     function updateLatency() {
         if (currentQuantum > 0 && currentSampleRate > 0) {
@@ -257,8 +317,13 @@ PlasmoidItem {
             Button {
                 text: "Refresh"
                 onClicked: {
+                    // Force refresh by directly executing commands
                     executable.exec(quantumSource);
                     executable.exec(sampleRateSource);
+                    
+                    // Reset combo box selection to show current values
+                    quantumComboBox.currentIndex = 0;
+                    sampleRateComboBox.currentIndex = 0;
                 }
             }
             Item {
