@@ -59,8 +59,26 @@ PlasmoidItem {
     }
 
     // Initialize models when plasmoid is ready
+    function applyStoredSettings() {
+        if (!plasmoid.configuration.applySettingsAtStart) {
+            return;
+        }
+
+        const lastQuantum = plasmoid.configuration.lastQuantum;
+        const lastSampleRate = plasmoid.configuration.lastSampleRate;
+
+        if (lastQuantum > 0) {
+            root.executeCommand("pw-metadata -n settings 0 clock.force-quantum " + lastQuantum);
+        }
+
+        if (lastSampleRate > 0) {
+            root.executeCommand("pw-metadata -n settings 0 clock.force-rate " + lastSampleRate);
+        }
+    }
+
     Component.onCompleted: {
         initializeModels();
+        applyStoredSettings();
     }
 
     // Update models when configuration changes
@@ -214,6 +232,8 @@ PlasmoidItem {
                         root.executeCommand("pw-metadata -n settings 0 clock.force-quantum " + currentValue)
                         if (currentValue === "0") {
                             quantumComboBox.currentIndex = 0
+                        } else {
+                            plasmoid.configuration.lastQuantum = parseInt(currentValue)
                         }
                         currentQuantum = parseInt(currentValue);
                         updateLatency();
@@ -272,6 +292,8 @@ PlasmoidItem {
                         root.executeCommand("pw-metadata -n settings 0 clock.force-rate " + currentValue)
                         if (currentValue === "0") {
                             sampleRateComboBox.currentIndex = 0
+                        } else {
+                            plasmoid.configuration.lastSampleRate = parseInt(currentValue)
                         }
                         currentSampleRate = parseInt(currentValue);
                         updateLatency();

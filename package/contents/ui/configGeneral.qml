@@ -15,6 +15,7 @@ Item {
     
     property var cfg_customQuantumValues: []
     property var cfg_customSampleRateValues: []
+    property bool cfg_applySettingsAtStart
     
     // Standard values for quick restore
     property var defaultQuantumValues: [32, 48, 64, 96, 128, 144, 256, 512, 1024, 8192]
@@ -402,5 +403,30 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: Kirigami.Units.largeSpacing
         }
+
+        Kirigami.Separator {
+            Layout.fillWidth: true
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: Kirigami.Units.smallSpacing
+
+            Kirigami.Heading {
+                level: 2
+                text: i18n("Startup Settings")
+            }
+
+            PlasmaComponents.CheckBox {
+                id: applySettingsAtStartCheckBox
+                text: i18n("Remember Quantum and Sample Rate at start")
+                checked: root.cfg_applySettingsAtStart
+                onCheckedChanged: root.cfg_applySettingsAtStart = checked
+
+                PlasmaComponents.ToolTip {
+                    text: i18n("When enabled, automatically applies the last used quantum and sample rate settings when the widget starts")
+                }
+            }
+        }
     }
-} 
+}
