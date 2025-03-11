@@ -198,9 +198,9 @@ PlasmoidItem {
 
         spacing: Kirigami.Units.largeSpacing
         Layout.minimumWidth: 240
-        Layout.minimumHeight: 100
+        Layout.minimumHeight: 150
         Layout.preferredWidth: 240
-        Layout.preferredHeight: 100
+        Layout.preferredHeight: 150
 
         ColumnLayout {
             spacing: Kirigami.Units.smallSpacing
