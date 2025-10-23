@@ -313,15 +313,15 @@ Item {
                     PlasmaComponents.TextField {
                         id: sampleRateInput
                         Layout.fillWidth: true
-                        placeholderText: i18n("Add new sample rate value (44100-384000)")
-                        validator: IntValidator { bottom: 44100; top: 384000 }
+                        placeholderText: i18n("Add new sample rate value (44100-768000)")
+                        validator: IntValidator { bottom: 44100; top: 768000 }
                     }
 
                     PlasmaComponents.Button {
                         text: i18n("Add")
-                        enabled: sampleRateInput.text.length > 0 && isNumeric(sampleRateInput.text, 44100, 384000)
+                        enabled: sampleRateInput.text.length > 0 && isNumeric(sampleRateInput.text, 44100, 768000)
                         onClicked: {
-                            if (isNumeric(sampleRateInput.text, 44100, 384000)) {
+                            if (isNumeric(sampleRateInput.text, 44100, 768000)) {
                                 // Check if value already exists
                                 var newValue = sampleRateInput.text;
                                 var exists = false;
