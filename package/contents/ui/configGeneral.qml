@@ -16,6 +16,8 @@ Item {
     property var cfg_customQuantumValues: []
     property var cfg_customSampleRateValues: []
     property bool cfg_applySettingsAtStart
+    property int cfg_quickQuantum: 128
+    property int cfg_quickSampleRate: 48000
     
     // Standard values for quick restore
     property var defaultQuantumValues: [32, 48, 64, 96, 128, 144, 256, 512, 1024, 8192]
@@ -313,15 +315,15 @@ Item {
                     PlasmaComponents.TextField {
                         id: sampleRateInput
                         Layout.fillWidth: true
-                        placeholderText: i18n("Add new sample rate value (44100-384000)")
-                        validator: IntValidator { bottom: 44100; top: 384000 }
+                        placeholderText: i18n("Add new sample rate value (44100-768000)")
+                        validator: IntValidator { bottom: 44100; top: 768000 }
                     }
 
                     PlasmaComponents.Button {
                         text: i18n("Add")
-                        enabled: sampleRateInput.text.length > 0 && isNumeric(sampleRateInput.text, 44100, 384000)
+                        enabled: sampleRateInput.text.length > 0 && isNumeric(sampleRateInput.text, 44100, 768000)
                         onClicked: {
-                            if (isNumeric(sampleRateInput.text, 44100, 384000)) {
+                            if (isNumeric(sampleRateInput.text, 44100, 768000)) {
                                 // Check if value already exists
                                 var newValue = sampleRateInput.text;
                                 var exists = false;
@@ -402,6 +404,107 @@ Item {
         Item {
             Layout.fillWidth: true
             Layout.preferredHeight: Kirigami.Units.largeSpacing
+        }
+
+        Kirigami.Separator {
+            Layout.fillWidth: true
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: Kirigami.Units.smallSpacing
+
+            Kirigami.Heading {
+                level: 2
+                text: i18n("Quick Settings Button")
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Kirigami.Units.smallSpacing
+
+                Kirigami.Heading {
+                    level: 3
+                    text: i18n("Quantum:")
+                }
+
+                PlasmaComponents.ComboBox {
+                    id: quickQuantumCombo
+                    Layout.fillWidth: true
+                    model: {
+                        var values = [ "Default" ];
+                        for (var i = 0; i < quantumListModel.count; i++) {
+                            if (quantumListModel.get(i).enabled) {
+                                values.push(quantumListModel.get(i).value);
+                            }
+                        }
+                        return values;
+                    }
+                    currentIndex: findIndexForValue(root.cfg_quickQuantum)
+                    onActivated: {
+                        if (currentValue === "Default") {
+                            root.cfg_quickQuantum = -1;
+                        } else {
+                            root.cfg_quickQuantum = parseInt(currentValue);
+                        }
+                    }
+
+                    function findIndexForValue(value) {
+                        if (value == -1) return 0;
+                        var values = [ "Default" ];
+                        for (var i = 0; i < quantumListModel.count; i++) {
+                            if (quantumListModel.get(i).enabled) {
+                                values.push(quantumListModel.get(i).value);
+                            }
+                        }
+                        for (var i = 1; i < values.length; i++) {
+                            if (values[i] == value) return i;
+                        }
+                        return 0;
+                    }
+                }
+
+                Kirigami.Heading {
+                    level: 3
+                    text: i18n("Sample Rate:")
+                }
+
+                PlasmaComponents.ComboBox {
+                    id: quickSampleRateCombo
+                    Layout.fillWidth: true
+                    model: {
+                        var values = [ "Default" ];
+                        for (var i = 0; i < sampleRateListModel.count; i++) {
+                            if (sampleRateListModel.get(i).enabled) {
+                                values.push(sampleRateListModel.get(i).value);
+                            }
+                        }
+                        return values;
+                    }
+                    currentIndex: findIndexForValue(root.cfg_quickSampleRate)
+                    onActivated: {
+                        if (currentValue === "Default") {
+                            root.cfg_quickSampleRate = -1;
+                        } else {
+                            root.cfg_quickSampleRate = parseInt(currentValue);
+                        }
+                    }
+
+                    function findIndexForValue(value) {
+                        if (value == -1) return 0;
+                        var values = [ "Default" ];
+                        for (var i = 0; i < sampleRateListModel.count; i++) {
+                            if (sampleRateListModel.get(i).enabled) {
+                                values.push(sampleRateListModel.get(i).value);
+                            }
+                        }
+                        for (var i = 1; i < values.length; i++) {
+                            if (values[i] == value) return i;
+                        }
+                        return 0;
+                    }
+                }
+            }
         }
 
         Kirigami.Separator {

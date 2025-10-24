@@ -14,12 +14,12 @@ PlasmoidItem {
 
     // Dynamic ListModels that will be populated from configuration
     property ListModel quantumModel: ListModel {
-        ListElement { text: ""; value: "-1"; isCurrent: false }
+        ListElement { text: ""; value: "Default"; isCurrent: false }
         ListElement { text: "Default"; value: "0"; isCurrent: false }
     }
 
     property ListModel sampleRateModel: ListModel {
-        ListElement { text: ""; value: "-1"; isCurrent: false }
+        ListElement { text: ""; value: "Default"; isCurrent: false }
         ListElement { text: "Default"; value: "0"; isCurrent: false }
     }
 
@@ -332,37 +332,93 @@ PlasmoidItem {
                 Layout.fillWidth: true
             }
         }
-        RowLayout {
+        ColumnLayout {
             spacing: Kirigami.Units.smallSpacing
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
+
             Button {
-                text: "Refresh"
+                id: quickButton
+                text: getButtonText()
+                checkable: true
+                checked: false
+
+                function getButtonText() {
+                    var q = plasmoid.configuration.quickQuantum;
+                    var r = plasmoid.configuration.quickSampleRate;
+                    var qStr = (q == -1 ? "--" : q.toString());
+                    var rStr = (r == -1 ? "--" : r.toString());
+                    return qStr + "/" + rStr;
+                }
+
                 onClicked: {
-                    // Force refresh by directly executing commands
-                    executable.exec(quantumSource);
-                    executable.exec(sampleRateSource);
-                    
-                    // Reset combo box selection to show current values
-                    quantumComboBox.currentIndex = 0;
-                    sampleRateComboBox.currentIndex = 0;
+                    if (checked) {
+                        if (plasmoid.configuration.quickQuantum != -1) {
+                            root.executeCommand("pw-metadata -n settings 0 clock.force-quantum " + plasmoid.configuration.quickQuantum);
+                        }
+                        if (plasmoid.configuration.quickSampleRate != -1) {
+                            root.executeCommand("pw-metadata -n settings 0 clock.force-rate " + plasmoid.configuration.quickSampleRate);
+                        }
+
+                        // Force refresh to update models
+                        executable.exec(quantumSource);
+                        executable.exec(sampleRateSource);
+
+                        // Reset combo box selection to show current values
+                        quantumComboBox.currentIndex = 0;
+                        sampleRateComboBox.currentIndex = 0;
+                    } else {
+                        // When unchecked, only reset parameters that are not set to Default
+                        if (plasmoid.configuration.quickQuantum != -1) {
+                            root.executeCommand("pw-metadata -n settings 0 clock.force-quantum 0");
+                        }
+                        if (plasmoid.configuration.quickSampleRate != -1) {
+                            root.executeCommand("pw-metadata -n settings 0 clock.force-rate 0");
+                        }
+
+                        // Force refresh to update models
+                        executable.exec(quantumSource);
+                        executable.exec(sampleRateSource);
+
+                        // Reset combo box selection to show current values
+                        quantumComboBox.currentIndex = 0;
+                        sampleRateComboBox.currentIndex = 0;
+                    }
                 }
             }
-            Item {
+
+            RowLayout {
+                spacing: Kirigami.Units.smallSpacing
                 Layout.fillWidth: true
-            }
+                Layout.alignment: Qt.AlignHCenter
+                Button {
+                    text: "Refresh"
+                    onClicked: {
+                        // Force refresh by directly executing commands
+                        executable.exec(quantumSource);
+                        executable.exec(sampleRateSource);
 
-            Label {
-                text: i18n("Latency:")
-                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                font.pointSize: Kirigami.Theme.smallFont.pointSize
-            }
+                        // Reset combo box selection to show current values
+                        quantumComboBox.currentIndex = 0;
+                        sampleRateComboBox.currentIndex = 0;
+                    }
+                }
+                Item {
+                    Layout.fillWidth: true
+                }
 
-            Label {
-                text: calculatedLatency.toFixed(2) + " ms"
-                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                Layout.rightMargin: 5
-                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                Label {
+                    text: i18n("Latency:")
+                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                }
+
+                Label {
+                    text: calculatedLatency.toFixed(2) + " ms"
+                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                    Layout.rightMargin: 5
+                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                }
             }
         }
     }

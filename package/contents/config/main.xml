@@ -21,5 +21,11 @@
         <entry name="lastSampleRate" type="Int">
             <default>0</default>
         </entry>
+        <entry name="quickQuantum" type="Int">
+            <default>128</default>
+        </entry>
+        <entry name="quickSampleRate" type="Int">
+            <default>48000</default>
+        </entry>
     </group>
-</kcfg> 
+</kcfg>
