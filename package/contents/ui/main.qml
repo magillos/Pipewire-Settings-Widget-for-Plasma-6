@@ -131,7 +131,7 @@ PlasmoidItem {
         }
     }
 
-    Plasmoid.icon: Qt.resolvedUrl("../jack-plug(4).svg")
+    Plasmoid.icon: Qt.resolvedUrl("../pipewire.svg")
 
     Plasma5Support.DataSource {
         id: executable
