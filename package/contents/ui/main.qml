@@ -1,3 +1,8 @@
+/*
+ *  Pipewire Settings Widget for Plasma 6
+ *  SPDX-License-Identifier: GPL-3.0-or-later
+ *  © 2025 Magillos
+ */
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
