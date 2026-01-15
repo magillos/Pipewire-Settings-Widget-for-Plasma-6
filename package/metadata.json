@@ -10,7 +10,7 @@
         "Category": "System Information",
         "Description": "Pipewire quantum and sample rate settings",
         "Icon": "audio",
-        "Id": "org.kde.plasma.pipewiresettings",
+        "Id": "com.github.magillos.pipewiresettings",
         "License": "GPL-3.0-or-later",
         "Name": "Pipewire Settings",
         "ServiceTypes": [
