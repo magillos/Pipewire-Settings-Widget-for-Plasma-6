@@ -242,6 +242,7 @@ PlasmoidItem {
                         }
                         currentQuantum = parseInt(currentValue);
                         updateLatency();
+                        quickButton.checked = false;
                     }
                     Component.onCompleted: {
                         executable.exec(quantumSource);
@@ -302,6 +303,7 @@ PlasmoidItem {
                         }
                         currentSampleRate = parseInt(currentValue);
                         updateLatency();
+                        quickButton.checked = false;
                     }
                     Component.onCompleted: {
                         executable.exec(sampleRateSource);
