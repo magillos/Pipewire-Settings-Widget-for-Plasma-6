@@ -16,7 +16,7 @@
         "ServiceTypes": [
             "Plasma/Applet"
         ],
-        "Version": "1.2.2",
+        "Version": "1.2.3",
         "Website": "https://github.com/magillos/Pipewire-Settings-Widget-for-Plasma-6"
     },
     "X-Plasma-API": "declarativeappletscript",

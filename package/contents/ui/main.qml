@@ -31,6 +31,7 @@ PlasmoidItem {
     property int currentQuantum: 0
     property int currentSampleRate: 0
     property real calculatedLatency: 0
+    property bool quickSettingsActive: false
 
     // Function to initialize models from configuration
     function initializeModels() {
@@ -136,6 +137,14 @@ PlasmoidItem {
         }
     }
 
+    function validateQuickButtonState() {
+        var quickQ = plasmoid.configuration.quickQuantum;
+        var quickR = plasmoid.configuration.quickSampleRate;
+        var qMatch = (quickQ == -1) || (currentQuantum == quickQ);
+        var rMatch = (quickR == -1) || (currentSampleRate == quickR);
+        quickSettingsActive = qMatch && rMatch && (quickQ != -1 || quickR != -1);
+    }
+
     Plasmoid.icon: Qt.resolvedUrl("../pipewire.svg")
 
     Plasma5Support.DataSource {
@@ -153,6 +162,7 @@ PlasmoidItem {
                     quantumModel.setProperty(0, "isCurrent", true);
                     currentQuantum = parseInt(quantum);
                     updateLatency();
+                    validateQuickButtonState();
                 }
             } else if (source === quantumAlternativeSource) {
                 var quantum = data.stdout.trim();
@@ -161,6 +171,7 @@ PlasmoidItem {
                 quantumModel.setProperty(0, "isCurrent", true);
                 currentQuantum = parseInt(quantum);
                 updateLatency();
+                validateQuickButtonState();
             } else if (source === sampleRateSource) {
                 if (data.stdout.trim() === "0") {
                     executable.exec(sampleRateAlternativeSource);
@@ -171,6 +182,7 @@ PlasmoidItem {
                     sampleRateModel.setProperty(0, "isCurrent", true);
                     currentSampleRate = parseInt(sampleRate);
                     updateLatency();
+                    validateQuickButtonState();
                 }
             } else if (source === sampleRateAlternativeSource) {
                 var sampleRate = data.stdout.trim();
@@ -179,6 +191,7 @@ PlasmoidItem {
                 sampleRateModel.setProperty(0, "isCurrent", true);
                 currentSampleRate = parseInt(sampleRate);
                 updateLatency();
+                validateQuickButtonState();
             }
             executable.disconnectSource(source);
         }
@@ -242,7 +255,7 @@ PlasmoidItem {
                         }
                         currentQuantum = parseInt(currentValue);
                         updateLatency();
-                        quickButton.checked = false;
+                        root.quickSettingsActive = false;
                     }
                     Component.onCompleted: {
                         executable.exec(quantumSource);
@@ -303,7 +316,7 @@ PlasmoidItem {
                         }
                         currentSampleRate = parseInt(currentValue);
                         updateLatency();
-                        quickButton.checked = false;
+                        root.quickSettingsActive = false;
                     }
                     Component.onCompleted: {
                         executable.exec(sampleRateSource);
@@ -348,7 +361,7 @@ PlasmoidItem {
                 id: quickButton
                 text: getButtonText()
                 checkable: true
-                checked: false
+                checked: root.quickSettingsActive
 
                 function getButtonText() {
                     var q = plasmoid.configuration.quickQuantum;
@@ -359,6 +372,7 @@ PlasmoidItem {
                 }
 
                 onClicked: {
+                    root.quickSettingsActive = checked;
                     if (checked) {
                         if (plasmoid.configuration.quickQuantum != -1) {
                             root.executeCommand("pw-metadata -n settings 0 clock.force-quantum " + plasmoid.configuration.quickQuantum);
