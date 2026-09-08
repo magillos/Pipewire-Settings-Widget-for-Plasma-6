@@ -145,7 +145,22 @@ PlasmoidItem {
         quickSettingsActive = qMatch && rMatch && (quickQ != -1 || quickR != -1);
     }
 
+    // Re-query the current quantum and sample rate from PipeWire
+    function refreshCurrentValues() {
+        executable.exec(quantumSource);
+        executable.exec(sampleRateSource);
+    }
+
     Plasmoid.icon: Qt.resolvedUrl("../pipewire.svg")
+
+    // Refresh values every time the popup is opened (no timer involved).
+    // Note: 'expanded' lives on the root PlasmoidItem in Plasma 6,
+    // not on plasmoid/Plasmoid (which is the C++ Applet there).
+    onExpandedChanged: expanded => {
+        if (expanded) {
+            refreshCurrentValues();
+        }
+    }
 
     Plasma5Support.DataSource {
         id: executable
